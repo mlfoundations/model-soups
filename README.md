@@ -1,16 +1,29 @@
 # [Model soups: averaging weights of multiple fine-tuned models improves accuracy without increasing inference time](https://arxiv.org/abs/2203.05482)
 
-This repository contains code for the paper [Model soups: averaging weights of multiple fine-tuned models improves accuracy without increasing inference time](https://arxiv.org/abs/2203.05482) by Mitchell Wortsman, Gabriel Ilharco, Samir Yitzhak Gadre, Rebecca Roelofs, Raphael Gontijo-Lopes, Ari S. Morcos, Hongseok Namkoong, Ali Farhadi, Yair Carmon*, Simon Kornblith*, and Ludwig Schmidt*.
+This repository contains code for the paper [Model soups: averaging weights of multiple fine-tuned models improves accuracy without increasing inference time](https://arxiv.org/abs/2203.05482) by 
+[Mitchell Wortsman](https://mitchellnw.github.io/), 
+[Gabriel Ilharco](http://gabrielilharco.com/), 
+[Samir Yitzhak Gadre](https://sagadre.github.io/), 
+[Rebecca Roelofs](https://twitter.com/beccaroelofs), 
+[Raphael Gontijo-Lopes](https://raphagl.com/), 
+[Ari S. Morcos](http://www.arimorcos.com/), 
+[Hongseok Namkoong](https://hsnamkoong.github.io/), 
+[Ali Farhadi](https://homes.cs.washington.edu/~ali/), 
+[Yair Carmon*](https://www.cs.tau.ac.il/~ycarmon/), 
+[Simon Kornblith*](https://simonster.com/), 
+and [Ludwig Schmidt*](https://people.csail.mit.edu/ludwigs/) (* denotes equal contribution, alphabetical ordering).
 
-
+Using this repository you can reproduce the figure below, which shows that model soups (averaging multiple fine-tuned solutions) can outperform
+the best individual model.
 <p align="center">
 <img src="figure.png"/>
 </p>
 
+As an alternative to this repository, [Cade Gordon](http://cadegordon.io/) has made the following [colab notebook](https://colab.research.google.com/drive1UmK-phTRXC4HoKb7_rScawnRqlG82svF?usp=sharing) to explore model soups on CIFAR10.
+
 ## Code
 
-Using this repository you can reproduce the figure above.
-There are 5 steps to do so: 1) downloading the models, 2) evaluating the individual models, 3) running the uniform soup, 4) running the greedy soup, and 5) making the plot.
+There are 5 steps to reproduced the figure above: 1) downloading the models, 2) evaluating the individual models, 3) running the uniform soup, 4) running the greedy soup, and 5) making the plot.
 
 Note that any of these steps can be skipped, i.e, you can run the greedy soup without evaluating the individual models.
 This is because we have already completed all of the steps and saved the results files in this repository (i.e., `individual_model_results.jsonl`).
