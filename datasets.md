@@ -50,10 +50,6 @@ rm objectnet-1.0.zip
 Can be downloaded via https://www.image-net.org/download.php.
 Please format for PyTorch, e.g., via https://github.com/pytorch/examples/blob/main/imagenet/extract_ILSVRC.sh.
 
-#### ImageNet held-out val set used for Greedy Soup selection
-
-Download via the [Google Drive](https://drive.google.com/file/d/1BaUulcHS4Ft25_NssEmOIfuzqx3qk3s5/view?usp=sharing).
-
 ```bash
 tar -xzvf imagenet-minival.tar.gz
 ```
@@ -68,7 +64,6 @@ ls
 you should see (at least):
 ```bash
 imagenet # containing train and val subfolders
-imagenet-minival
 imagenetv2-matched-frequency-format-val
 imagenet-r
 imagenet-a
