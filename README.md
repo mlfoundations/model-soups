@@ -15,11 +15,11 @@ and [Ludwig Schmidt*](https://people.csail.mit.edu/ludwigs/) (* denotes equal co
 
 Using this repository you can reproduce the figure below, which shows that model soups (averaging multiple fine-tuned solutions) can outperform
 the best individual model.
+As an alternative to this repository, [Cade Gordon](http://cadegordon.io/) has made the following [colab notebook](https://colab.research.google.com/drive1UmK-phTRXC4HoKb7_rScawnRqlG82svF?usp=sharing) to explore model soups on CIFAR10.
 <p align="center">
 <img src="figure.png"/>
 </p>
 
-As an alternative to this repository, [Cade Gordon](http://cadegordon.io/) has made the following [colab notebook](https://colab.research.google.com/drive1UmK-phTRXC4HoKb7_rScawnRqlG82svF?usp=sharing) to explore model soups on CIFAR10.
 
 ## Code
 
