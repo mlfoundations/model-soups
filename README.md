@@ -40,13 +40,15 @@ conda env create -f environment.yml
 conda activate model_soups
 ```
 
-To download the datasets see [datasets.md](datasets.md).
+To download the datasets see [datasets.md](datasets.md). When required, set `--data-location` to the `$DATA_LOCATION` used in [datasets.md](datasets.md).
 
 ### Step 1: Downloading the models
 
 ```bash
-python main.py --download-models --data-location <where data is stored> --model-location <where models will be stored>
+python main.py --download-models --model-location <where models will be stored>
 ```
+This will store models to `--model-location`.
+
 
 ### Step 2: Evaluate individual models
 
@@ -72,7 +74,7 @@ Note that this will first delete then rewrite the file `greedy_soup_results.json
 ### Step 5. Plot
 
 ```bash
-python main.py --plot --data-location <where data is stored> --model-location <where models are stored>
+python main.py --plot
 ```
 Note that this will first delete then rewrite the file `figure.png`.
 

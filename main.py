@@ -153,15 +153,17 @@ if __name__ == '__main__':
         individual_model_val_accs.reverse()
         sorted_models = [x[0] for x in individual_model_val_accs]
         
+        # Start the soup by using the first ingredient.
         greedy_soup_ingredients = [sorted_models[0]]
         greedy_soup_params = torch.load(os.path.join(args.model_location, f'{sorted_models[0]}.pt'))
         best_val_acc_so_far = individual_model_val_accs[0][1]
         held_out_val_set = ImageNet2p(preprocess, args.data_location, args.batch_size, args.workers)
 
+        # Now, iterate through all models and consider adding them to the greedy soup.
         for i in range(1, NUM_MODELS):
             print(f'Testing model {i} of {NUM_MODELS}')
 
-            # get the potential greedy soup.
+            # Get the potential greedy soup, which consists of the greedy soup with the new model added.
             new_ingredient_params = torch.load(os.path.join(args.model_location, f'{sorted_models[i]}.pt'))
             num_ingredients = len(greedy_soup_ingredients)
             potential_greedy_soup_params = {
@@ -170,9 +172,11 @@ if __name__ == '__main__':
                 for k in new_ingredient_params
             }
 
+            # Run the potential greedy soup on the held-out val set.
             model = get_model_from_sd(potential_greedy_soup_params, base_model)
             held_out_val_accuracy = test_model_on_dataset(model, held_out_val_set)
 
+            # If accuracy on the held-out val set increases, add the new model to the greedy soup.
             print(f'Potential greedy soup val acc {held_out_val_accuracy}, best so far {best_val_acc_so_far}.')
             if held_out_val_accuracy > best_val_acc_so_far:
                 greedy_soup_ingredients.append(sorted_models[i])
@@ -180,6 +184,7 @@ if __name__ == '__main__':
                 greedy_soup_params = potential_greedy_soup_params
                 print(f'Adding to soup. New soup is {greedy_soup_ingredients}')
 
+        # Finally, evaluate the greedy soup.
         model = get_model_from_sd(greedy_soup_params, base_model)
         results = {'model_name' : f'greedy_soup'}
         for dataset_cls in [ImageNet2p, ImageNet, ImageNetV2, ImageNetSketch, ImageNetR, ObjectNet, ImageNetA]:
