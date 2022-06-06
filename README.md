@@ -25,9 +25,10 @@ As an alternative to this repository, [Cade Gordon](http://cadegordon.io/) has m
 
 There are 5 steps to reproduced the figure above: 1) downloading the models, 2) evaluating the individual models, 3) running the uniform soup, 4) running the greedy soup, and 5) making the plot.
 
-Note that any of these steps can be skipped, i.e, you can run the greedy soup without evaluating the individual models.
+Note that any of these steps can be skipped, i.e, you can immediately generate the plot above via `python main.py --plot`.
+You can also run the greedy soup without evaluating the individual models.
 This is because we have already completed all of the steps and saved the results files in this repository (i.e., `individual_model_results.jsonl`).
-If you do decide to rerun a step, the corresponding results file is deleted.
+If you do decide to rerun a step, the corresponding results file or plot is deleted and regenerated.
 
 The exception is step 1, downloading the models. If you wish to do steps 2, 3, or 4 you must first run step 1.
 
