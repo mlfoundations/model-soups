@@ -30,7 +30,7 @@ You can also run the greedy soup without evaluating the individual models.
 This is because we have already completed all of the steps and saved the results files in this repository (i.e., `individual_model_results.jsonl`).
 If you do decide to rerun a step, the corresponding results file or plot is deleted and regenerated.
 
-The exception is step 1, downloading the models. If you wish to do steps 2, 3, or 4 you must first run step 1.
+The exception is step 1, downloading the models. If you wish to run steps 2, 3, or 4 you must first run step 1.
 
 ### Install dependencies and downloading datasets
 
@@ -42,34 +42,34 @@ conda activate model_soups
 
 To download the datasets see [datasets.md](datasets.md).
 
-### Step 1: Downloading the models.
+### Step 1: Downloading the models
 
 ```bash
 python main.py --download-models --data-location <where data is stored> --model-location <where models will be stored>
 ```
 
-### Step 2: Evaluate individual models.
+### Step 2: Evaluate individual models
 
 ```bash
 python main.py --eval-individual-models --data-location <where data is stored> --model-location <where models are stored>
 ```
 Note that this will first delete then rewrite the file `individual_model_results.jsonl`.
 
-### Step 3: Uniform soup.
+### Step 3: Uniform soup
 
 ```bash
 python main.py --uniform-soup --data-location <where data is stored> --model-location <where models are stored>
 ```
 Note that this will first delete then rewrite the file `uniform_soup_results.jsonl`.
 
-### Step 4. Greedy soup.
+### Step 4. Greedy soup
 
 ```bash
 python main.py --greedy-soup --data-location <where data is stored> --model-location <where models are stored>
 ```
 Note that this will first delete then rewrite the file `greedy_soup_results.jsonl`.
 
-### Step 5. Plot.
+### Step 5. Plot
 
 ```bash
 python main.py --plot --data-location <where data is stored> --model-location <where models are stored>
@@ -82,6 +82,10 @@ If you want, you can all steps with:
 ```bash
 python main.py --download-models --eval-individual-models --uniform-soup --greedy-soup --plot --data-location <where data is stored> --model-location <where models are stored>
 ```
+
+### Questions
+
+If you have any questions please feel free to raise an issue. If there are any FAQ we will answer them here.
 
 ## Citing
 
