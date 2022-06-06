@@ -3,7 +3,7 @@
 ### Step 1: Download
 
 ```bash
-export DATA_LOCATION=~/data
+export DATA_LOCATION=~/data # feel free to change.
 cd $DATA_LOCATION
 ```
 
