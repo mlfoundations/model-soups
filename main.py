@@ -5,6 +5,7 @@ import torch
 import clip
 import os
 import json
+import operator
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -61,6 +62,7 @@ if __name__ == '__main__':
     NUM_MODELS = 72
     INDIVIDUAL_MODEL_RESULTS_FILE = 'individual_model_results.jsonl'
     UNIFORM_SOUP_RESULTS_FILE = 'uniform_soup_results.jsonl'
+    GREEDY_SOUP_RESULTS_FILE = 'greedy_soup_results.jsonl'
 
     # Step 1: Download models.
     if args.download_models:
@@ -75,9 +77,8 @@ if __name__ == '__main__':
 
     model_paths = [os.path.join(args.model_location, f'model_{i}.pt') for i in range(NUM_MODELS)]
 
-
     # Step 2: Evaluate individual models.
-    if args.eval_individual_models or args.uniform_soup:
+    if args.eval_individual_models or args.uniform_soup or args.greedy_soup:
         base_model, preprocess = clip.load('ViT-B/32', 'cpu', jit=False)
 
     if args.eval_individual_models:
@@ -108,9 +109,6 @@ if __name__ == '__main__':
     if args.uniform_soup:
         if os.path.exists(UNIFORM_SOUP_RESULTS_FILE):
             os.remove(UNIFORM_SOUP_RESULTS_FILE)
-        uniform_soup_location = os.path.join(args.model_location, 'uniform_soup.pt')
-        if os.path.exists(uniform_soup_location):
-            os.remove(uniform_soup_location)
 
         # create the uniform soup sequentially to not overload memory
         for j, model_path in enumerate(model_paths):
@@ -141,7 +139,58 @@ if __name__ == '__main__':
 
 
     # Step 4: Greedy Soup.
+    if args.greedy_soup:
+        if os.path.exists(GREEDY_SOUP_RESULTS_FILE):
+            os.remove(GREEDY_SOUP_RESULTS_FILE)
 
+        # Sort models by decreasing accuracy on the held-out validation set ImageNet2p
+        # (We call the held out-val set ImageNet2p because it is 2 percent of ImageNet train)
+        individual_model_db = pd.read_json(INDIVIDUAL_MODEL_RESULTS_FILE, lines=True)
+        individual_model_val_accs = {}
+        for _, row in individual_model_db.iterrows():
+            individual_model_val_accs[row['model_name']] = row['ImageNet2p']
+        individual_model_val_accs = sorted(individual_model_val_accs.items(), key=operator.itemgetter(1))
+        individual_model_val_accs.reverse()
+        sorted_models = [x[0] for x in individual_model_val_accs]
+        
+        greedy_soup_ingredients = [sorted_models[0]]
+        greedy_soup_params = torch.load(os.path.join(args.model_location, f'{sorted_models[0]}.pt'))
+        best_val_acc_so_far = individual_model_val_accs[0][1]
+        held_out_val_set = ImageNet2p(preprocess, args.data_location, args.batch_size, args.workers)
+
+        for i in range(1, NUM_MODELS):
+            print(f'Testing model {i} of {NUM_MODELS}')
+
+            # get the potential greedy soup.
+            new_ingredient_params = torch.load(os.path.join(args.model_location, f'{sorted_models[i]}.pt'))
+            num_ingredients = len(greedy_soup_ingredients)
+            potential_greedy_soup_params = {
+                k : greedy_soup_params[k].clone() * (num_ingredients / (num_ingredients + 1.)) + 
+                    new_ingredient_params[k].clone() * (1. / (num_ingredients + 1))
+                for k in new_ingredient_params
+            }
+
+            model = get_model_from_sd(potential_greedy_soup_params, base_model)
+            held_out_val_accuracy = test_model_on_dataset(model, held_out_val_set)
+
+            print(f'Potential greedy soup val acc {held_out_val_accuracy}, best so far {best_val_acc_so_far}.')
+            if held_out_val_accuracy > best_val_acc_so_far:
+                greedy_soup_ingredients.append(sorted_models[i])
+                best_val_acc_so_far = held_out_val_accuracy
+                greedy_soup_params = potential_greedy_soup_params
+                print(f'Adding to soup. New soup is {greedy_soup_ingredients}')
+
+        model = get_model_from_sd(greedy_soup_params, base_model)
+        results = {'model_name' : f'greedy_soup'}
+        for dataset_cls in [ImageNet2p, ImageNet, ImageNetV2, ImageNetSketch, ImageNetR, ObjectNet, ImageNetA]:
+            print(f'Evaluating on {dataset_cls.__name__}.')
+            dataset = dataset_cls(preprocess, args.data_location, args.batch_size, args.workers)
+            accuracy = test_model_on_dataset(model, dataset)
+            results[dataset_cls.__name__] = accuracy
+            print(accuracy)
+
+        with open(GREEDY_SOUP_RESULTS_FILE, 'a+') as f:
+            f.write(json.dumps(results) + '\n')
 
     # Step 5: Plot.
     if args.plot:
@@ -153,9 +202,23 @@ if __name__ == '__main__':
         uniform_soup_db['OOD'] = 1./5 * (uniform_soup_db['ImageNetV2'] + 
             uniform_soup_db['ImageNetR'] + uniform_soup_db['ImageNetSketch'] + 
             uniform_soup_db['ObjectNet'] + uniform_soup_db['ImageNetA'])
+        greedy_soup_db = pd.read_json(GREEDY_SOUP_RESULTS_FILE, lines=True)
+        greedy_soup_db['OOD'] = 1./5 * (greedy_soup_db['ImageNetV2'] + 
+            greedy_soup_db['ImageNetR'] + greedy_soup_db['ImageNetSketch'] + 
+            greedy_soup_db['ObjectNet'] + greedy_soup_db['ImageNetA'])
 
         fig = plt.figure(constrained_layout=True, figsize=(8, 6))
         ax = fig.subplots()
+
+        ax.scatter(
+            greedy_soup_db['ImageNet'], 
+            greedy_soup_db['OOD'], 
+            marker='*', 
+            color='C4',
+            s=400,
+            label='Greedy Soup',
+            zorder=10
+        )
 
         ax.scatter(
             uniform_soup_db['ImageNet'], 
@@ -164,7 +227,7 @@ if __name__ == '__main__':
             color='C0',
             s=200,
             label='Uniform Soup',
-            zorder=1
+            zorder=10
         )
 
         ax.scatter(
@@ -174,7 +237,7 @@ if __name__ == '__main__':
             color='slategray',
             s=150,
             label='Initialization (LP)',
-            zorder=1
+            zorder=10
         )
 
         ax.scatter(
@@ -184,7 +247,7 @@ if __name__ == '__main__':
             color='C2',
             s=130,
             label='Various hyperparameters',
-            zorder=1
+            zorder=10
         )
 
         ax.set_ylabel('Avg. accuracy on 5 distribution shifts', fontsize=16)

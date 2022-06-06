@@ -62,8 +62,6 @@ def test_model_on_dataset(model, dataset):
             loader = dataset.train_loader
             # assert to make sure the imagenet held-out minival logic is consistent across machines.
             # tested on a few machines but if this fails for you please submit an issue and we will resolve.
-            print('ASSERTING')
-            print(dataset.train_dataset.__getitem__(dataset.sampler.indices[1000]))
             assert dataset.train_dataset.__getitem__(dataset.sampler.indices[1000])['image_paths'].endswith('n01675722_4108.JPEG')
 
         for i, batch in enumerate(loader):
