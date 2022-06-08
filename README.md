@@ -1,23 +1,12 @@
 # [Model soups: averaging weights of multiple fine-tuned models improves accuracy without increasing inference time](https://arxiv.org/abs/2203.05482)
 
-This repository contains code for the paper [Model soups: averaging weights of multiple fine-tuned models improves accuracy without increasing inference time](https://arxiv.org/abs/2203.05482) by 
-[Mitchell Wortsman](https://mitchellnw.github.io/), 
-[Gabriel Ilharco](http://gabrielilharco.com/), 
-[Samir Yitzhak Gadre](https://sagadre.github.io/), 
-[Rebecca Roelofs](https://twitter.com/beccaroelofs), 
-[Raphael Gontijo-Lopes](https://raphagl.com/), 
-[Ari S. Morcos](http://www.arimorcos.com/), 
-[Hongseok Namkoong](https://hsnamkoong.github.io/), 
-[Ali Farhadi](https://homes.cs.washington.edu/~ali/), 
-[Yair Carmon*](https://www.cs.tau.ac.il/~ycarmon/), 
-[Simon Kornblith*](https://simonster.com/), 
-and [Ludwig Schmidt*](https://people.csail.mit.edu/ludwigs/) (* denotes equal contribution, alphabetical ordering).
+This repository contains code for the paper [Model soups: averaging weights of multiple fine-tuned models improves accuracy without increasing inference time](https://arxiv.org/abs/2203.05482).
 
 Using this repository you can reproduce the figure below, which shows that model soups (averaging multiple fine-tuned solutions) can outperform
 the best individual model.
 As an alternative to this repository, [Cade Gordon](http://cadegordon.io/) has made the following [colab notebook](https://colab.research.google.com/drive/1UmK-phTRXC4HoKb7_rScawnRqlG82svF?usp=sharing) to explore model soups on CIFAR10.
 <p align="center">
-<img src="figure.png"/>
+<img src="figure.png", width="200"/>
 </p>
 
 
@@ -89,14 +78,31 @@ python main.py --download-models --eval-individual-models --uniform-soup --greed
 
 If you have any questions please feel free to raise an issue. If there are any FAQ we will answer them here.
 
+### Authors
+
+This project is by the following authors, where * denotes equal contribution (alphabetical ordering):
+- [Mitchell Wortsman](https://mitchellnw.github.io/)
+- [Gabriel Ilharco](http://gabrielilharco.com/)
+- [Samir Yitzhak Gadre](https://sagadre.github.io/)
+- [Rebecca Roelofs](https://twitter.com/beccaroelofs)
+- [Raphael Gontijo-Lopes](https://raphagl.com/)
+- [Ari S. Morcos](http://www.arimorcos.com/)
+- [Hongseok Namkoong](https://hsnamkoong.github.io/)
+- [Ali Farhadi](https://homes.cs.washington.edu/~ali/)
+- [Yair Carmon*](https://www.cs.tau.ac.il/~ycarmon/)
+- [Simon Kornblith*](https://simonster.com/)
+- [Ludwig Schmidt*](https://people.csail.mit.edu/ludwigs/)
+
+
 ## Citing
 
 If you found this repository useful, please consider citing:
 ```bibtex
-@article{wortsman2022model,
+@InProceedings{wortsman2022model,
   title={Model soups: averaging weights of multiple fine-tuned models improves accuracy without increasing inference time},
-  author={Wortsman, Mitchell and Ilharco, Gabriel and Gadre, Samir Yitzhak and Roelofs, Rebecca and Gontijo-Lopes, Raphael and Morcos, Ari S and Namkoong, Hongseok and Farhadi, Ali and Carmon, Yair and Kornblith, Simon and others},
-  journal={arXiv preprint arXiv:2203.05482},
-  year={2022}
+  author={Wortsman, Mitchell and Ilharco, Gabriel and Gadre, Samir Yitzhak and Roelofs, Rebecca and Gontijo-Lopes, Raphael and Morcos, Ari S and Namkoong, Hongseok and Farhadi, Ali and Carmon, Yair and Kornblith, Simon and Schmidt, Ludwig},
+  booktitle={Proceedings of the 39th International Conference on Machine Learning},
+  year={2022},
 }
+
 ```
