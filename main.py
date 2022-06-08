@@ -12,7 +12,7 @@ import numpy as np
 import pandas as pd
 
 from datasets import ImageNet2p, ImageNet, ImageNetV2, ImageNetSketch, ImageNetR, ObjectNet, ImageNetA
-from utils import get_model_from_sd, test_model_on_dataset
+from utils import get_model_from_sd, test_model_on_dataset, test_cached_predictions_on_dataset
 
 def parse_arguments():
     parser = argparse.ArgumentParser()
@@ -41,7 +41,13 @@ def parse_arguments():
         "--greedy-soup", action="store_true", default=False,
     )
     parser.add_argument(
+        "--ensemble", action="store_true", default=False,
+    )
+    parser.add_argument(
         "--plot", action="store_true", default=False,
+    )
+    parser.add_argument(
+        "--cache-predictions", action="store_true", default=False,
     )
     parser.add_argument(
         "--batch-size",
@@ -63,6 +69,7 @@ if __name__ == '__main__':
     INDIVIDUAL_MODEL_RESULTS_FILE = 'individual_model_results.jsonl'
     UNIFORM_SOUP_RESULTS_FILE = 'uniform_soup_results.jsonl'
     GREEDY_SOUP_RESULTS_FILE = 'greedy_soup_results.jsonl'
+    ENSEMBLE_RESULTS_FILE = 'ensemble_results.jsonl'
 
     # Step 1: Download models.
     if args.download_models:
@@ -78,7 +85,7 @@ if __name__ == '__main__':
     model_paths = [os.path.join(args.model_location, f'model_{i}.pt') for i in range(NUM_MODELS)]
 
     # Step 2: Evaluate individual models.
-    if args.eval_individual_models or args.uniform_soup or args.greedy_soup:
+    if args.eval_individual_models or args.uniform_soup or args.greedy_soup or args.ensemble:
         base_model, preprocess = clip.load('ViT-B/32', 'cpu', jit=False)
 
     if args.eval_individual_models:
@@ -98,7 +105,11 @@ if __name__ == '__main__':
                 print(f'Evaluating model {j} of {NUM_MODELS - 1} on {dataset_cls.__name__}.')
 
                 dataset = dataset_cls(preprocess, args.data_location, args.batch_size, args.workers)
-                accuracy = test_model_on_dataset(model, dataset)
+                accuracy = test_model_on_dataset(
+                    model, 
+                    dataset, 
+                    cache_loc=os.path.join(args.model_location, 'cache', dataset_cls.__name__, f'model_{j}.pt') if args.cache_predictions else None,
+                )
                 results[dataset_cls.__name__] = accuracy
                 print(accuracy)
 
@@ -197,7 +208,33 @@ if __name__ == '__main__':
         with open(GREEDY_SOUP_RESULTS_FILE, 'a+') as f:
             f.write(json.dumps(results) + '\n')
 
-    # Step 5: Plot.
+    # Step 5: Ensemble.
+    if args.ensemble:
+        # make sure that predictions are cached.
+        # also -- please use the same size batch size that you did when
+        # caching the predictions.
+        assert os.path.exists(os.path.join(args.model_location, 'cache'))
+        if os.path.exists(ENSEMBLE_RESULTS_FILE):
+            os.remove(ENSEMBLE_RESULTS_FILE)
+
+        results = {'model_name' : f'ensemble'}
+        for dataset_cls in [ImageNet2p, ImageNet, ImageNetV2, ImageNetSketch, ImageNetR, ObjectNet, ImageNetA]:
+
+            print(f'Evaluating on {dataset_cls.__name__}.')
+            predictions = [ x / float(NUM_MODELS) for x in torch.load(os.path.join(args.model_location, 'cache', dataset_cls.__name__, f'model_0.pt'))]
+            for j in range(1, NUM_MODELS):
+                    to_add = torch.load(os.path.join(args.model_location, 'cache', dataset_cls.__name__, f'model_{j}.pt'))
+                    for i, x in enumerate(to_add):
+                        predictions[i] += x / float(NUM_MODELS)
+            dataset = dataset_cls(preprocess, args.data_location, args.batch_size, args.workers)
+            accuracy = test_cached_predictions_on_dataset(predictions, dataset)
+            results[dataset_cls.__name__] = accuracy
+            print(accuracy)
+       
+        with open(ENSEMBLE_RESULTS_FILE, 'a+') as f:
+            f.write(json.dumps(results) + '\n')
+
+    # Step 6: Plot.
     if args.plot:
         individual_model_db = pd.read_json(INDIVIDUAL_MODEL_RESULTS_FILE, lines=True)
         individual_model_db['OOD'] = 1./5 * (individual_model_db['ImageNetV2'] + 
@@ -211,6 +248,10 @@ if __name__ == '__main__':
         greedy_soup_db['OOD'] = 1./5 * (greedy_soup_db['ImageNetV2'] + 
             greedy_soup_db['ImageNetR'] + greedy_soup_db['ImageNetSketch'] + 
             greedy_soup_db['ObjectNet'] + greedy_soup_db['ImageNetA'])
+        ensemble_db = pd.read_json(ENSEMBLE_RESULTS_FILE, lines=True)
+        ensemble_db['OOD'] = 1./5 * (ensemble_db['ImageNetV2'] + 
+            ensemble_db['ImageNetR'] + ensemble_db['ImageNetSketch'] + 
+            ensemble_db['ObjectNet'] + ensemble_db['ImageNetA'])
 
         fig = plt.figure(constrained_layout=True, figsize=(8, 6))
         ax = fig.subplots()
@@ -232,6 +273,15 @@ if __name__ == '__main__':
             color='C0',
             s=200,
             label='Uniform Soup',
+            zorder=10
+        )
+        ax.scatter(
+            ensemble_db['ImageNet'], 
+            ensemble_db['OOD'], 
+            marker='s', 
+            color='C3',
+            s=90,
+            label='Ensemble (more compute)',
             zorder=10
         )
 

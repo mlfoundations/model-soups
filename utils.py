@@ -1,6 +1,8 @@
-import torch
 import math
 import time
+import os
+
+import torch
 
 class ModelWrapper(torch.nn.Module):
     def __init__(self, model, feature_dim, num_classes, normalize=False, initial_weights=None):
@@ -50,7 +52,12 @@ def maybe_dictionarize_batch(batch):
         raise ValueError(f'Unexpected number of elements: {len(batch)}')
 
 
-def test_model_on_dataset(model, dataset):
+def test_model_on_dataset(model, dataset, cache_loc=None):
+
+    cache = cache_loc is not None
+    if cache:
+        os.makedirs('/'.join(cache_loc.split('/')[:-1]), exist_ok=True)
+        tocache = []
 
     model.eval()
     device = 'cuda'
@@ -83,8 +90,65 @@ def test_model_on_dataset(model, dataset):
             if isinstance(logits, list):
                 logits = logits[0]
 
-
             pred = logits.argmax(dim=1, keepdim=True).to(device)
+            if hasattr(dataset, 'accuracy'):
+                acc1, num_total = dataset.accuracy(logits, y, image_paths, None)
+                correct += acc1
+                n += num_total
+            else:
+                correct += pred.eq(y.view_as(pred)).sum().item()
+                n += y.size(0)
+
+            if cache:
+                tocache.append(logits.clone().cpu())
+
+            batch_time = time.time() - end
+            end = time.time()
+            if i % 20 == 0:
+                percent_complete = 100.0 * i / len(loader)
+                print(
+                    f"[{percent_complete:.0f}% {i}/{len(loader)}]\t"
+                    f"Acc: {100 * (correct/n):.2f}\tData (t) {data_time:.3f}\tBatch (t) {batch_time:.3f}"
+                )
+
+        if cache:
+            torch.save(tocache, cache_loc)
+        top1 = correct / n
+        return top1
+
+
+def test_cached_predictions_on_dataset(predictions, dataset):
+
+    with torch.no_grad():
+        top1, correct, n = 0., 0., 0.
+        end = time.time()
+        loader = dataset.test_loader
+        if type(dataset).__name__ == 'ImageNet2p':
+            loader = dataset.train_loader
+            # assert to make sure the imagenet held-out minival logic is consistent across machines.
+            # tested on a few machines but if this fails for you please submit an issue and we will resolve.
+            assert dataset.train_dataset.__getitem__(dataset.sampler.indices[1000])['image_paths'].endswith('n01675722_4108.JPEG')
+
+        for i, batch in enumerate(loader):
+            batch = maybe_dictionarize_batch(batch)
+            _, labels = batch['images'], batch['labels']
+            data_time = time.time() - end
+            y = labels
+            if 'image_paths' in batch:
+                image_paths = batch['image_paths']
+
+            logits = predictions[i]
+
+            projection_fn = getattr(dataset, 'project_logits', None)
+            if projection_fn is not None:
+                logits = projection_fn(logits, 'cpu')
+
+            if hasattr(dataset, 'project_labels'):
+                y = dataset.project_labels(y, 'cpu')
+            if isinstance(logits, list):
+                logits = logits[0]
+
+            pred = logits.argmax(dim=1, keepdim=True)
             if hasattr(dataset, 'accuracy'):
                 acc1, num_total = dataset.accuracy(logits, y, image_paths, None)
                 correct += acc1
