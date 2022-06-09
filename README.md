@@ -74,6 +74,8 @@ If you want, you can all steps with:
 python main.py --download-models --eval-individual-models --uniform-soup --greedy-soup --plot --data-location <where data is stored> --model-location <where models are stored>
 ```
 
+Also note: if you are interested in running ensemble baselines, check out [the ensemble branch](https://github.com/mlfoundations/model-soups/tree/ensemble).
+
 ### Questions
 
 If you have any questions please feel free to raise an issue. If there are any FAQ we will answer them here.
