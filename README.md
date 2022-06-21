@@ -78,6 +78,8 @@ Also note: if you are interested in running ensemble baselines, check out [the e
 
 Also note: if you are interested in running a minial example of [wise-ft](https://arxiv.org/abs/2109.01903), you can run `python wise-ft-example.py --download-models`. 
 
+Also note: if you are interested in running minimal examples of zeroshot/fine-tuning, you can run `python zeroshot.py` or `python finetune.py`. See program arguments (i.e., run with `--help`) for more information.
+
 ### Questions
 
 If you have any questions please feel free to raise an issue. If there are any FAQ we will answer them here.
