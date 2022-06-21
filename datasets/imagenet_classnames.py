@@ -1315,20 +1315,5 @@ objectnet_classnames = ['Alarm clock',
  'Wok']
 
 def get_classnames(source):
-    if source == 'openai':
-        return openai_classnames
-    elif source == 'synset':
-        return synset_classnames
-    elif source == 'ytbb_robust_classnames':
-        return ytbb_robust_classnames
-    elif source == 'imagenet_vid_robust_classnames':
-        return [v.replace('_', ' ') for v in imagenet_vid_robust_classnames]
-    elif source == 'objectnet_classnames':
-        return [v.lower() for v in objectnet_classnames]
-    elif source == 'openai+synset':
-        all_classnames = [
-            list(set([c1] + c2)) for c1, c2 in zip(openai_classnames, synset_classnames)
-        ]
-    else:
-        raise ValueError(f'Unknown classname source for imagenet: {source}')
-    return all_classnames
+    return openai_classnames
+

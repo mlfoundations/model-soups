@@ -1,16 +1,9 @@
 import argparse
 import os
-from tkinter import Image
 import wget
 import torch
 import clip
 import os
-import json
-import operator
-
-import matplotlib.pyplot as plt
-import numpy as np
-import pandas as pd
 
 from datasets import ImageNet, ImageNetR
 from utils import get_model_from_sd, test_model_on_dataset
