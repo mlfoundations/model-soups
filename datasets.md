@@ -11,7 +11,7 @@ cd $DATA_LOCATION
 
 ```bash
 wget https://people.eecs.berkeley.edu/~hendrycks/imagenet-a.tar
-tar -xvzf imagenet-a.tar
+tar xvf imagenet-a.tar
 rm imagenet-a.tar
 ```
 
@@ -19,7 +19,7 @@ rm imagenet-a.tar
 
 ```bash
 wget https://people.eecs.berkeley.edu/~hendrycks/imagenet-r.tar
-tar -xvzf imagenet-r.tar
+tar xvf imagenet-r.tar
 rm imagenet-r.tar
 ```
 
@@ -49,10 +49,6 @@ rm objectnet-1.0.zip
 
 Can be downloaded via https://www.image-net.org/download.php.
 Please format for PyTorch, e.g., via https://github.com/pytorch/examples/blob/main/imagenet/extract_ILSVRC.sh.
-
-```bash
-tar -xzvf imagenet-minival.tar.gz
-```
 
 ### Step 2: Check that datasts are downloaded
 
