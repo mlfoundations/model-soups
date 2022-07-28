@@ -33,7 +33,7 @@ class ImageNet:
         sampler = self.get_train_sampler()
         self.sampler = sampler
         kwargs = {'shuffle' : True} if sampler is None else {}
-        print('kwargs is', kwargs)
+        # print('kwargs is', kwargs)
         self.train_loader = torch.utils.data.DataLoader(
             self.train_dataset,
             sampler=sampler,
@@ -160,4 +160,17 @@ class ImageNet2p(ImageNet):
 
         idxs = idxs.astype('int')
         sampler = SubsetSampler(np.where(idxs)[0])
+        return sampler
+
+class ImageNet2pShuffled(ImageNet):
+
+    def get_train_sampler(self):
+        print('shuffling val set.')
+        idx_file = 'imagenet_98_idxs.npy'
+        assert os.path.exists(idx_file)
+        with open(idx_file, 'rb') as f:
+            idxs = np.load(f)
+
+        idxs = idxs.astype('int')
+        sampler = SubsetRandomSampler(np.where(idxs)[0])
         return sampler
