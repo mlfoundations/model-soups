@@ -7,7 +7,7 @@
 # We run this on a node with 490GB RAM and use 1 GPU with 40GB of memory.
 # It also looks like PyTorch released a very helpful utility which we recommend if re-implementing:
 # https://pytorch.org/docs/stable/generated/torch.nn.utils.stateless.functional_call.html?utm_source=twitter&utm_medium=organic_social&utm_campaign=docs&utm_content=functional-api-for-modules
-# Also we recomend lr = 0.1, epochs = 5 but hyperparater tuning and training for longer may help.
+# Also we recomend lr = 0.05, epochs = 5 but hyperparater tuning and training for longer may help.
 ###
 
 import argparse
@@ -178,7 +178,7 @@ if __name__ == '__main__':
     print(alpha_model.alpha())
     print(len(list(alpha_model.parameters())))
 
-    lr = 0.1
+    lr = 0.05
     epochs = 5
 
     optimizer = torch.optim.AdamW(alpha_model.parameters(), lr=lr, weight_decay=0.)
